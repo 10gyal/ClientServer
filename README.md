@@ -20,7 +20,7 @@ This lab requires a total of four submissions: milestone 1, milestone 2, milesto
 |:---  |:--- |
 | Monday, November 20, 19:00 | Hand-out |
 | Monday, November 27, 19:00 | Lab session 1, Milestone 1 |
-| Sunday, December  3, 23:59 | Submission deadline |
+| Sunday, December  3, 23:59 | Submission deadline (Milestone 2) |
 
 
 ## Logistics
@@ -319,20 +319,20 @@ The handout contains the following files and directories
 
 | File/Directory | Description |
 |:---  |:--- |
-| client.c | Client-side implemention |
 | doc/ | Doxygen instructions, configuration file, and auto-generated documentation |
 | README.md | this file |
 | Makefile | Makefile mcdonalds |
 | .gitignore | Tells git which files to ignore |
-| mcdonalds.c | The McDonald's server. A skeleton is provided. Implement your solution by editing this file. |
-| net.c/h | Network helper functions for the lab |
+| src/client.c | Client-side implemention |
+| src/mcdonalds.c | The McDonald's server. A skeleton is provided. Implement your solution by editing this file. |
+| src/net.c/h | Network helper functions for the lab |
 | reference/ | Reference implementation |
 
 
 ##<a name="milestone"></a> Your Task
-Your task is to implment this lab according to the specification above. The lab is divided in different milestons that should be completed before the day of the deadline. 
+Your task is to implment this lab according to the specification above. The lab is divided in different milestons that should be completed before the deadlines (refer to the schedule above). 
 
-### Part A (Tag: Milestone 1, deadline: Wednesday, December 7, 23:59)
+### Part A (Tag: Milestone 1)
 The first functionality is to implement the server with only one thread accepting only one client.
 The client thread will be in charge of each client we create. The thread is already implemented in `client.c` as `thread_task()`. One helpful thing
 to do before connecting to the server and checking the threads are well started is to print the client number or anything recognizable inside
@@ -341,7 +341,7 @@ After the thread implementation this task should also have the socket communicat
 The skeleton provides some structures, global variables and macros that we think will be helpful. Start by working on `start_server()` in `mcdonalds.c` and `thread_task()` in `client.c`. Make sure that the code on your server and client follows basic socket connection procedure that you've learned from the lecture. Helper functions in `net.c/h` will help you use socket connection easily.
 Ater that you should only focus in the `serve_client()` function. This function is missing the functionality of how to get the order from the client, the parsing of the order, sending the order to the kitchen and waiting for the order to become ready. After this step, the server should work correctly for one client.
 
-### Part B (Tag: Milestone 2, deadline: Friday, December 16, 23:59)
+### Part B (Tag: Milestone 2)
 The server from part A cannot serve multiple requests simultaneously. We now want to extend this server to work in a multi-threaded way. Your job is to support multiple clients that are served by 5 kitchen threads. Beware of critical sections - atomicity must be assured for accesses to shared data structures.
 To prevent the further spread of the COVID-19 virus, our McDonald's restaurant implements social distancing rules. Limit the number of customers in the waiting queue to 20. If any customer arrives when the queue is full, decline the connection.
 
