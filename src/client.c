@@ -76,8 +76,28 @@ void *thread_task(void *data)
   //
   // TODO
   //
+  printf("Client Thread ID: %lu\n", tid);
+
   // - get the socket list
   // - create a socket and connect
+
+  ai = getsocklist(IP, PORT, AF_UNSPEC, SOCK_STREAM, 0, NULL);
+
+  ai_it = ai;
+  while(ai_it != NULL){
+    printf("  trying "); dump_sockaddr(ai_it->ai_addr); printf("..."); fflush(stdout);
+
+    serverfd = socket(ai_it->ai_family, ai_it->ai_socktype, ai_it->ai_protocol);
+    if(serverfd != -1){
+      if(connect(serverfd, ai_it->ai_addr, ai_it->ai_addrlen) != -1) break;
+      close(serverfd);
+    }
+    printf("failed.\n");
+    ai_it = ai_it->ai_next;    
+  }
+
+  if(ai_it == NULL) perror("Cannot connect.");
+
 
   // Read welcome message from the server
   read = get_line(serverfd, &buffer, &buflen);
@@ -133,8 +153,24 @@ int main(int argc, char const *argv[])
   //
   // TODO
   //
+  pthread_t* threads;
   // - create n threads where n is the numerical value of argv[1]
   // - have all threads join before exiting
+  num_threads = atoi(argv[1]);
+  threads = (pthread_t*) malloc(num_threads * sizeof(pthread_t));
+
+  for (i = 0; i < num_threads; i++){
+    if (pthread_create(&threads[i], NULL, thread_task, (void*)&i) != 0) {
+      printf("Error: cannot create thread\n");
+      return 1;
+    }
+  }
+
+  for (i = 0; i < num_threads; i++){
+    pthread_join(threads[i], NULL);
+  }
+
+  free(threads);
 
   return 0;
 }

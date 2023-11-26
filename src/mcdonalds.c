@@ -294,11 +294,44 @@ void start_server()
 
   // TODO
   // - get socket list
+  ai = getsocklist(NULL, PORT, AF_UNSPEC, SOCK_STREAM, 1, NULL);
+
+  // iterate until valid one is found
+  ai_it = ai;
+  while(ai_it != NULL){
+    printf("  trying "); dump_sockaddr(ai_it->ai_addr); printf("..."); fflush(stdout);
+
+    clientfd = socket(ai_it->ai_family, ai_it->ai_socktype, ai_it->ai_protocol);
+    if(clientfd != -1){
+      if((setsockopt(clientfd, SOL_SOCKET, SO_REUSEADDR, (const void*)&opt, sizeof(int)) == 0) && (bind(clientfd, ai_it->ai_addr, ai_it->ai_addrlen) == 0) && (listen(clientfd, 1) == 0)) break;
+      close(clientfd);
+    }
+    printf("failed.\n");
+    ai_it = ai_it->ai_next;
+  }
+
+  if (ai_it == NULL) perror("Cannot bind to port.");
+
+  freeaddrinfo(ai);
 
   printf("Listening...\n");
 
   // TODO
   // - keep listening and accepting clients
+  while(1){
+    socklen_t addrlen = sizeof(client);
+    clientfd = accept(listenfd, &client, &addrlen);
+
+    if (clientfd > 0){
+      printf("  connection from "); dump_sockaddr(&client); printf("\n");
+      serve_client(&listenfd);
+      close(clientfd);
+    }
+    else {
+      perror("accept");
+      break;
+    }
+  }  
 }
 
 /// @brief prints overall statistics
