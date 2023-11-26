@@ -161,6 +161,8 @@ int main(int argc, char const *argv[])
 
   for (i = 0; i < num_threads; i++){
     if (pthread_create(&threads[i], NULL, thread_task, (void*)&i) != 0) {
+      srand(time(NULL));
+
       printf("Error: cannot create thread\n");
       return 1;
     }

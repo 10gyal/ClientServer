@@ -243,24 +243,65 @@ void* serve_client(void *newsock)
   free(message);
 
   //-------- remove for milestone 2 --------
-  close(clientfd);
-  free(newsock);
-  free(buffer);
-  server_ctx.total_queueing--;
-  return NULL;
+  // close(clientfd);
+  // free(newsock);
+  // free(buffer);
+  // server_ctx.total_queueing--;
+  // return NULL;
   //-----------------------------------------
 
   // receive order from the customer
   // TODO
+  read = get_line(clientfd, &buffer, &msglen);
+  if (read <= 0) {
+      printf("Error: cannot read from client\n");
+      error_client(clientfd, newsock, buffer);
+      return NULL;
+  }
+
+  burger = strtok(buffer, "\n"); // Assuming the order is a single line
+
+  if (burger == NULL) {
+      printf("Error: invalid order format\n");
+      error_client(clientfd, newsock, buffer);
+      return NULL;
+  }
+
+  printf("Received order: %s\n", burger);
 
   // parse order from the customer
   // TODO
+  // Parse the burger type
+  type = BURGER_TYPE_MAX;
+  for (i = 0; i < BURGER_TYPE_MAX; i++) {
+      if (strcmp(burger, burger_names[i]) == 0) {
+          type = i;
+          break;
+      }
+  }
 
-  // if burger is not available, exit connection
-  // TODO
+  if (type == BURGER_TYPE_MAX) {
+      printf("Error: unknown burger type\n");
+      error_client(clientfd, newsock, buffer);
+      return NULL;
+  }
 
-  // issue order to kitchen and wait
-  // TODO
+  // issue an order to kitchen and wait
+  order = issue_order(customerID, type);
+  pthread_mutex_lock(&order->mutex);
+  while (!order->is_ready) {
+    pthread_cond_wait(&order->cond, &order->mutex);
+  }
+  pthread_mutex_unlock(&order->mutex);
+
+  // // if burger is not available, exit connection
+  // // TODO
+  if (type == BURGER_TYPE_MAX) {
+      printf("Error: unknown burger type\n");
+      error_client(clientfd, newsock, buffer);
+      return NULL;
+  }
+  
 
   // if order successfully handled, hand burger and say goodbye
   if (order->is_ready) {
@@ -273,11 +314,13 @@ void* serve_client(void *newsock)
     }
     free(message);
   }
-
   free(order);
 
   close(clientfd);
+
   free(newsock);
+  // printf("HERE\n");
+
   free(buffer);
 
   server_ctx.total_queueing--;
@@ -288,13 +331,17 @@ void* serve_client(void *newsock)
 /// @brief start server listening
 void start_server()
 {
-  int clientfd, addrlen, opt = 1;
+  int clientfd, opt = 1;
   struct sockaddr_in client;
   struct addrinfo *ai, *ai_it;
-
+  socklen_t addrlen;
   // TODO
   // - get socket list
   ai = getsocklist(NULL, PORT, AF_UNSPEC, SOCK_STREAM, 1, NULL);
+  if (ai == NULL) {
+        perror("getsocklist");
+        return;
+    }
 
   // iterate until valid one is found
   ai_it = ai;
@@ -319,17 +366,19 @@ void start_server()
   // TODO
   // - keep listening and accepting clients
   while(1){
-    socklen_t addrlen = sizeof(client);
-    clientfd = accept(listenfd, &client, &addrlen);
+    int fd;
+    addrlen = sizeof(client);
+    fd = accept(clientfd, (struct sockaddr*)&client, &addrlen);
+    printf("fd %d\n", fd);
 
-    if (clientfd > 0){
-      printf("  connection from "); dump_sockaddr(&client); printf("\n");
-      serve_client(&listenfd);
-      close(clientfd);
-    }
-    else {
+    if (fd < 0){
       perror("accept");
       break;
+    }
+    else {
+      printf("  connection from "); dump_sockaddr((struct sockaddr*)&client); printf("\n");
+      serve_client(&fd);
+      close(fd);
     }
   }  
 }
