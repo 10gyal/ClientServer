@@ -318,7 +318,7 @@ void* serve_client(void *newsock)
 
   close(clientfd);
 
-  free(newsock);
+  // free(newsock);
   // printf("HERE\n");
 
   free(buffer);
@@ -369,7 +369,6 @@ void start_server()
     int fd;
     addrlen = sizeof(client);
     fd = accept(clientfd, (struct sockaddr*)&client, &addrlen);
-    printf("fd %d\n", fd);
 
     if (fd < 0){
       perror("accept");

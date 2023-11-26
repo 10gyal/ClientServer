@@ -160,9 +160,8 @@ int main(int argc, char const *argv[])
   threads = (pthread_t*) malloc(num_threads * sizeof(pthread_t));
 
   for (i = 0; i < num_threads; i++){
+    srand(time(NULL));
     if (pthread_create(&threads[i], NULL, thread_task, (void*)&i) != 0) {
-      srand(time(NULL));
-
       printf("Error: cannot create thread\n");
       return 1;
     }
