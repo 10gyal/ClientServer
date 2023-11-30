@@ -267,7 +267,7 @@ void* serve_client(void *newsock)
       return NULL;
   }
 
-  printf("Received order: %s\n", burger);
+  // printf("Received order: %s\n", burger);
 
   // parse order from the customer
   // TODO
@@ -328,6 +328,13 @@ void* serve_client(void *newsock)
   return NULL;
 }
 
+void* serve_client_wrapper(void *newsock){
+  int clientfd = *(int *)newsock;
+  free(newsock);
+  serve_client(&clientfd);
+  return NULL;
+}
+
 /// @brief start server listening
 void start_server()
 {
@@ -335,7 +342,7 @@ void start_server()
   struct sockaddr_in client;
   struct addrinfo *ai, *ai_it;
   socklen_t addrlen;
-  // TODO
+  // TODO  
   // - get socket list
   ai = getsocklist(NULL, PORT, AF_UNSPEC, SOCK_STREAM, 1, NULL);
   if (ai == NULL) {
@@ -348,10 +355,10 @@ void start_server()
   while(ai_it != NULL){
     printf("  trying "); dump_sockaddr(ai_it->ai_addr); printf("..."); fflush(stdout);
 
-    clientfd = socket(ai_it->ai_family, ai_it->ai_socktype, ai_it->ai_protocol);
-    if(clientfd != -1){
-      if((setsockopt(clientfd, SOL_SOCKET, SO_REUSEADDR, (const void*)&opt, sizeof(int)) == 0) && (bind(clientfd, ai_it->ai_addr, ai_it->ai_addrlen) == 0) && (listen(clientfd, 1) == 0)) break;
-      close(clientfd);
+    listenfd = socket(ai_it->ai_family, ai_it->ai_socktype, ai_it->ai_protocol);
+    if(listenfd != -1){
+      if((setsockopt(listenfd, SOL_SOCKET, SO_REUSEADDR, (const void*)&opt, sizeof(int)) == 0) && (bind(listenfd, ai_it->ai_addr, ai_it->ai_addrlen) == 0) && (listen(listenfd, 1) == 0)) break;
+      close(listenfd);
     }
     printf("failed.\n");
     ai_it = ai_it->ai_next;
@@ -366,19 +373,40 @@ void start_server()
   // TODO
   // - keep listening and accepting clients
   while(1){
-    int fd;
+    int *fd = malloc(sizeof(int));
     addrlen = sizeof(client);
-    fd = accept(clientfd, (struct sockaddr*)&client, &addrlen);
 
-    if (fd < 0){
+    // pthread_mutex_lock(&queue_mutex);
+    // printf("total queueing: %d\n", server_ctx.total_queueing);
+    // if(server_ctx.total_queueing > CUSTOMER_MAX){
+    //   pthread_mutex_unlock(&queue_mutex);
+    //   printf("Max number of customers exceeded, Good bye!\n");
+    //   return;
+    // }
+    // pthread_mutex_unlock(&queue_mutex);
+
+    *fd = accept(listenfd, (struct sockaddr*)&client, &addrlen);
+
+    if (*fd < 0){
       perror("accept");
+      free(fd);
       break;
     }
-    else {
-      printf("  connection from "); dump_sockaddr((struct sockaddr*)&client); printf("\n");
-      serve_client(&fd);
-      close(fd);
+
+    if(server_ctx.total_queueing >= 20){
+      printf("Max number of customers exceeded, Good bye!\n");
+      close(*fd);
+      free(fd);
+      perror("max queue");
     }
+
+    pthread_t client_thread;
+    // printf("  connection from "); dump_sockaddr((struct sockaddr*)&client); printf("\n");
+    pthread_create(&client_thread, NULL, serve_client_wrapper, fd);
+    pthread_detach(client_thread);
+    // pthread_detach(client_thread);
+    // serve_client(&fd);
+    // close(fd);
   }  
 }
 
@@ -465,8 +493,16 @@ void init_mcdonalds(void)
     server_ctx.total_burgers[i] = 0;
   }
 
-  pthread_create(&kitchen_thread[0], NULL, kitchen_task, NULL);
-  pthread_detach(kitchen_thread[0]);
+  for (int i = 0; i < NUM_KITCHEN; i ++){
+    if(pthread_create(&kitchen_thread[i], NULL, kitchen_task, NULL) != 0){
+      perror("Failed to create a thread");
+    }
+    pthread_detach(kitchen_thread[i]);
+  }
+  // for (int i = 0; i < NUM_KITCHEN; i++){
+  //   pthread_detach(kitchen_thread[i]);
+  // }
+
 }
 
 /// @brief program entry point

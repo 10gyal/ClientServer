@@ -76,7 +76,7 @@ void *thread_task(void *data)
   //
   // TODO
   //
-  printf("Client Thread ID: %lu\n", tid);
+  // printf("Client Thread ID: %lu\n", tid);
 
   // - get the socket list
   // - create a socket and connect
@@ -85,7 +85,7 @@ void *thread_task(void *data)
 
   ai_it = ai;
   while(ai_it != NULL){
-    printf("  trying "); dump_sockaddr(ai_it->ai_addr); printf("..."); fflush(stdout);
+    // printf("  trying "); dump_sockaddr(ai_it->ai_addr); printf("..."); fflush(stdout);
 
     serverfd = socket(ai_it->ai_family, ai_it->ai_socktype, ai_it->ai_protocol);
     if(serverfd != -1){
