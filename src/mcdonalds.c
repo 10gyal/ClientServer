@@ -55,7 +55,7 @@
 /// @name Constant definitions
 /// @{
 
-#define CUSTOMER_MAX 10                                     ///< maximum number of clients
+#define CUSTOMER_MAX 20                                     ///< maximum number of clients
 #define NUM_KITCHEN 5                                       ///< number of kitchen thread(s)
 
 /// @}
@@ -386,12 +386,17 @@ void start_server()
     // pthread_mutex_unlock(&queue_mutex);
 
     *fd = accept(listenfd, (struct sockaddr*)&client, &addrlen);
-
     if (*fd < 0){
       perror("accept");
       free(fd);
       break;
     }
+    server_ctx.total_queueing++;
+
+    // printf("customers: %d\n", server_ctx.total_customers);
+    // printf("queue: %d\n", server_ctx.total_queueing);
+    // printf("burgers: %d\n", server_ctx.total_burgers);
+
 
     if(server_ctx.total_queueing >= 20){
       printf("Max number of customers exceeded, Good bye!\n");
