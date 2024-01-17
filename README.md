@@ -1,43 +1,6 @@
 # Lab 5: Network Lab
 
-The purpose of this lab is to familiarize ourselves with networking and the client-server programming model.
-
-To achieve that goal, we implement a server that serves hamburgers and a client requests them.
-
-You will learn
-   * how to communicate under TCP/IP network environment.
-   * how to assure atomicity on critical sections between threads.
-   * how to limit the number of the clients on listening socket.
-
-[[_TOC_]]
-
-
-## Important Dates
-
-This lab requires a total of four submissions: milestone 1, milestone 2, milestone 3, and milestond 4 (final submission). Make sure to keep all deadlines.
-
-| Date | Description |
-|:---  |:--- |
-| Monday, November 20, 19:00 | Hand-out |
-| Monday, November 27, 19:00 | Lab session 1, Milestone 1 |
-| Sunday, December  3, 23:59 | Submission deadline (Milestone 2) |
-
-
-## Logistics
-
-### Hand-out
-
-Start by forking the lab into your namespace and making sure the lab visibility is set to private. Read the instructions here carefully. Then clone the lab to your local computer and get to work.
-
-
-### Submission
-
-Commit and push your fork frequently to avoid data loss. For this lab you should create a tag for each milestone that we prepared in [Your Task](#milestone). Make sure to check the dates and name. We decided to do this to make sure that the lab is not done the last day.
-
-To create a tag, go to your Network lab repository on https://teaching.csap.snu.ac.kr/ and navigate to Repository -> Tags. Enter the milestone name tag as the Tag name then hit "Create tag". You can leave the other fields empty.
-
-If you later discover an error and want to update your submission, you can delete the tag, fix your solution, and create a new tag. If that happens _after_ the submission deadline, you also need to email the TAs so that they are aware of the update to your submission.
-
+Lab Work for SysProg 2023 Fall  
 
 ## McDonald's Overview
 
